@@ -35,8 +35,8 @@ public class PizzaController : ControllerBase
     public IActionResult Create(Pizza pizza)
     {
 
-            PizzaService.Add(pizza);
-    return CreatedAtAction(nameof(Get), new { id = pizza.Id }, pizza);
+        PizzaService.Add(pizza);
+        return CreatedAtAction(nameof(Get), new { id = pizza.Id }, pizza);
 
         // try
         // {
@@ -68,19 +68,18 @@ public class PizzaController : ControllerBase
         try
         {
             if (id <= 0 || pizza == null)
-            {
                 return BadRequest();
-            }
 
-            var OldPizza = PizzaService.Get(id);
-            if (OldPizza is null)
-            {
+            if (id != pizza.Id)
+                return BadRequest();
+
+            var existingPizza = PizzaService.Get(id);
+            if (existingPizza is null)
                 return NotFound();
-            }
 
-            OldPizza.Name = pizza.Name;
-            OldPizza.IsGlutenFree = pizza.IsGlutenFree;
-            PizzaService.Update(OldPizza);
+            existingPizza.Name = pizza.Name;
+            existingPizza.IsGlutenFree = pizza.IsGlutenFree;
+            PizzaService.Update(existingPizza);
             return Ok();
         }
         catch (System.Exception)
@@ -95,12 +94,16 @@ public class PizzaController : ControllerBase
     {
         try
         {
-            if (id > 0)
-            {
-                PizzaService.Delete(id);
-                return Ok();
-            }
-            return NotFound();
+            if (id <= 0)
+                return BadRequest();
+
+            var pizza = PizzaService.Get(id);
+            if (pizza is null)
+                return NotFound();
+
+            PizzaService.Delete(id);
+            return Ok();
+
         }
         catch (System.Exception)
         {
